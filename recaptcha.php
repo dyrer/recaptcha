@@ -24,8 +24,16 @@ class Captcha_comment_Form {
         $this->private_key = '6Le6d-USAAAAAKvV-30YdZbdl4DVmg_geKyUxF6b';
 
         // adds the captcha to the WordPress form
-        add_action('comment_form',array($this,'captcha_display'));
+        add_action('comment_form', array($this,'captcha_display'));
 
-        
+                // delete comment that fail the captcha challenge
+        add_action('wp_head', array($this, 'delete_failed_captcha_comment'));
+
+        //authenticate the captcha answer
+        add_filter('preprocess_comment', array($this, 'validate_captcha_field'));
+
+	    //redirect location for comment
+	    add_filter('comment_post_redirect',array($this, 'redirect_fail_captcha'));
+
     }
 }
