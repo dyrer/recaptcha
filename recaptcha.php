@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Add reCAPTCHA to comment form
-Plugin URI: http://sitepoint.com
+Plugin URI: http://athanasiadis.me
 Description: Add Google's reCAPTCHA to WordPress comment form
 Version: 1.0
-Author: Agbonghama Collins
-Author URI: http://w3guy.com
+Author: Athanasiadis Evagelos
+Author URI: http://athanasiadis.me
 License: GPL2
 */
 
@@ -35,6 +35,7 @@ class Captcha_Comment_Form {
 		} elseif ( isset( $_GET['captcha'] ) && $_GET['captcha'] == 'failed' ) {
 			echo '<strong>ERROR</strong>: CAPTCHA response was incorrect';
 		}
+
 		echo <<<CAPTCHA_FORM
 		<style type='text/css'>#submit {
 				display: none;
@@ -42,6 +43,7 @@ class Captcha_Comment_Form {
 		<script type="text/javascript"
 		        src="http://www.google.com/recaptcha/api/challenge?k=<?= $this->public_key; ?>">
 		</script>
+
 		<noscript>
 			<iframe src="http://www.google.com/recaptcha/api/noscript?k=<?= $this->public_key; ?>"
 			        height="300" width="300" frameborder="0"></iframe>
@@ -119,7 +121,7 @@ CAPTCHA_FORM;
 		);
 		return $this->recaptcha_post_request( $post_body );
 	}
-	
+
 	/**
 	 * Send HTTP POST request and return the response.
 	 *
