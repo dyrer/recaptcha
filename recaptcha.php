@@ -8,6 +8,8 @@ Author: Athanasiadis Evagelos
 Author URI: http://athanasiadis.me
 License: GPL2
 */
+require_once "recaptchalib.php";
+
 
 class Captcha_Comment_Form {
 	/** @type string private key|public key */
@@ -18,6 +20,10 @@ class Captcha_Comment_Form {
 	public function __construct() {
 		$this->public_key  = '6Le6d-USAAAAAFuYXiezgJh6rDaQFPKFEi84yfMc';
 		$this->private_key = '6Le6d-USAAAAAKvV-30YdZbdl4DVmg_geKyUxF6b';
+		$this->site_key = "6Lcm6f4SAAAAAGiao2I8Y9z9dtM3krk8ZJcfLL-7";
+		$this->secret = "6Lcm6f4SAAAAAA-aOLeb8V-htg_n4Fjl-y877b7f";
+		$this->resp=null;
+
 		// adds the captcha to the comment form
 		add_action( 'comment_form', array( $this, 'captcha_display' ) );
 		// delete comment that fail the captcha challenge
@@ -29,32 +35,47 @@ class Captcha_Comment_Form {
 	}
 
 	/** Output the reCAPTCHA form field. */
-	public function captcha_display() {
-		if ( isset( $_GET['captcha'] ) && $_GET['captcha'] == 'empty' ) {
-			echo '<strong>ERROR</strong>: CAPTCHA should not be empty';
-		} elseif ( isset( $_GET['captcha'] ) && $_GET['captcha'] == 'failed' ) {
-			echo '<strong>ERROR</strong>: CAPTCHA response was incorrect';
-		}
+		public function captcha_display() {
+
+			$reCaptcha = new ReCaptcha($this->secret);
+
+			// Was there a reCAPTCHA response?
+			if ($_POST["g-recaptcha-response"]) {
+				$resp = $reCaptcha->verifyResponse(
+					$_SERVER["REMOTE_ADDR"],
+					$_POST["g-recaptcha-response"]
+				);
+			}
+
+
+
+			if ( isset( $resp ) && $resp == 'empty' ) {
+				echo '<strong>ERROR</strong>: CAPTCHA should not be emptymalaka';
+			} elseif ( isset( $_GET['captcha'] ) && $_GET['captcha'] == 'failed' ) {
+				echo '<strong>ERROR</strong>: CAPTCHA response was incorrect';
+			}
+
+		/**
+		 * 'sitekey' : '6Lcm6f4SAAAAAGiao2I8Y9z9dtM3krk8ZJcfLL-7'
+		 */
 
 		echo <<<CAPTCHA_FORM
-		<style type='text/css'>#submit {
-				display: none;
-			}</style>
-		<script type="text/javascript"
-		        src="http://www.google.com/recaptcha/api/challenge?k=<?= $this->public_key; ?>">
-		</script>
+			<form action="?" method="post">
+				<?php echo 'hello'; ?>
+				<script type="text/javascript"
+	        src="https://www.google.com/recaptcha/api.js?hl=<?php echo $lang;?>">
+	</script>
+	<div class="g-recaptcha" data-sitekey="<6Lcm6f4SAAAAAGiao2I8Y9z9dtM3krk8ZJcfLL-7"></div>
+</form>
 
-		<noscript>
-			<iframe src="http://www.google.com/recaptcha/api/noscript?k=<?= $this->public_key; ?>"
-			        height="300" width="300" frameborder="0"></iframe>
-			<br>
-			<textarea name="recaptcha_challenge_field" rows="3" cols="40">
-			</textarea>
-			<input type="hidden" name="recaptcha_response_field"
-			       value="manual_challenge">
-		</noscript>
-		<input name="submit" type="submit" id="submit-alt" tabindex="6" value="Post Comment"/>
+
+
+
 CAPTCHA_FORM;
+
+
+
+
 	}
 
 	/**
@@ -119,6 +140,7 @@ CAPTCHA_FORM;
 			'challenge'  => $challenge,
 			'response'   => $response
 		);
+		echo $response;
 		return $this->recaptcha_post_request( $post_body );
 	}
 
@@ -132,7 +154,8 @@ CAPTCHA_FORM;
 	public function recaptcha_post_request( $post_body ) {
 		$args = array( 'body' => $post_body );
 		// make a POST request to the Google reCaptcha Server
-		$request = wp_remote_post( 'https://www.google.com/recaptcha/api/verify', $args );
+		$request = wp_remote_post( 'https://www.google.com/recaptcha/api/siteverify', $args );
+		echo 'responseeeeeeeee';
 		// get the request response body
 		$response_body = wp_remote_retrieve_body( $request );
 		/**
